@@ -1,6 +1,6 @@
-using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using SampleProject.API.Shared.Responses;
+using SampleProject.Application.Shared.Exceptions;
 
 namespace SampleProject.API.Extensions;
 
@@ -21,7 +21,7 @@ public static class ExceptionHandlingExtensions
                     {
                         context.Response.StatusCode = StatusCodes.Status400BadRequest;
                         context.Response.ContentType = contentType;
-
+                        
                         var response = AppResponse.BadRequest(data: validation.Errors, message: validation.Message);
                         await context.Response.WriteAsJsonAsync(response);
                         break;

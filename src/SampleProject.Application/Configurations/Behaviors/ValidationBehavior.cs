@@ -1,7 +1,6 @@
-using FluentValidation;
 using SampleProject.Application.Configurations.Mediators;
 using SampleProject.Application.SeedWork;
-using SampleProject.Application.Shared.Helpers;
+using SampleProject.Application.Shared.Exceptions;
 
 namespace SampleProject.Application.Configurations.Behaviors;
 
@@ -17,13 +16,16 @@ public class ValidationBehavior<TRequest>(IEnumerable<IRequestValidator<TRequest
             return;
         }
 
-        var failures = validatorList
-            .SelectMany(v => ValidationHelper.ToValidationFailures(v.Validate(request)))
-            .ToList();
+        var errors = validatorList
+            .SelectMany(v => v.Validate(request))
+            .GroupBy(kv => kv.Key)
+            .ToDictionary(
+                g => g.Key,
+                IReadOnlyCollection<string> (g) => g.SelectMany(kv => kv.Value).ToList());
 
-        if (failures.Count != 0)
+        if (errors.Count != 0)
         {
-            throw new ValidationException(failures);
+            throw new ValidationException(errors);
         }
 
         await next();
@@ -42,13 +44,16 @@ public class ValidationBehavior<TRequest, TResponse>(IEnumerable<IRequestValidat
             return await next();
         }
 
-        var failures = validatorList
-            .SelectMany(v => ValidationHelper.ToValidationFailures(v.Validate(request)))
-            .ToList();
+        var errors = validatorList
+            .SelectMany(v => v.Validate(request))
+            .GroupBy(kv => kv.Key)
+            .ToDictionary(
+                g => g.Key,
+                IReadOnlyCollection<string> (g) => g.SelectMany(kv => kv.Value).ToList());
 
-        if (failures.Count != 0)
+        if (errors.Count != 0)
         {
-            throw new ValidationException(failures);
+            throw new ValidationException(errors);
         }
 
         return await next();
