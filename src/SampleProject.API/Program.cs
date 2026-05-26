@@ -10,6 +10,7 @@ builder.Services.AddApiDocs();
 var app = builder.Build();
 
 app.UseApiDocs(builder.Configuration);
+app.UseExceptionHandling();
 
 app.UseHttpsRedirection();
 
